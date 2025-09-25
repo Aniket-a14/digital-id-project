@@ -11,13 +11,16 @@ contract TouristIDRegistryV1 is Initializable, OwnableUpgradeable, UUPSUpgradeab
     struct TouristID {
         string name;
         uint256 dob; // unix timestamp
+        string aadhaarHash; // hashed Aadhaar
+        string itinerary; // itinerary of the tourist
+        string emergencyContact; // emergency contact
         string ipfsHash; // metadata stored on IPFS
         bool exists;
     }
 
     mapping(address => TouristID) private _registry;
-    event IDRegistered(address indexed who, string name, uint256 dob, string ipfsHash);
-    event IDUpdated(address indexed who, string name, uint256 dob, string ipfsHash);
+    event IDRegistered(address indexed who, string name, uint256 dob, string aadhaarHash, string itinerary, string emergencyContact, string ipfsHash);
+    event IDUpdated(address indexed who, string name, uint256 dob, string aadhaarHash, string itinerary, string emergencyContact, string ipfsHash);
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -32,21 +35,61 @@ contract TouristIDRegistryV1 is Initializable, OwnableUpgradeable, UUPSUpgradeab
         }
     }
 
-    function registerID(address who, string calldata name, uint256 dob, string calldata ipfsHash) external onlyOwner {
+    function registerID(
+        address who,
+        string calldata name,
+        uint256 dob,
+        string calldata aadhaarHash,
+        string calldata itinerary,
+        string calldata emergencyContact,
+        string calldata ipfsHash
+    ) external onlyOwner {
         require(!_registry[who].exists, "Already registered");
-        _registry[who] = TouristID({name: name, dob: dob, ipfsHash: ipfsHash, exists: true});
-        emit IDRegistered(who, name, dob, ipfsHash);
+        _registry[who] = TouristID({
+            name: name,
+            dob: dob,
+            aadhaarHash: aadhaarHash,
+            itinerary: itinerary,
+            emergencyContact: emergencyContact,
+            ipfsHash: ipfsHash,
+            exists: true
+        });
+        emit IDRegistered(who, name, dob, aadhaarHash, itinerary, emergencyContact, ipfsHash);
     }
 
-    function updateID(address who, string calldata name, uint256 dob, string calldata ipfsHash) external onlyOwner {
+    function updateID(
+        address who,
+        string calldata name,
+        uint256 dob,
+        string calldata aadhaarHash,
+        string calldata itinerary,
+        string calldata emergencyContact,
+        string calldata ipfsHash
+    ) external onlyOwner {
         require(_registry[who].exists, "Not registered");
-        _registry[who] = TouristID({name: name, dob: dob, ipfsHash: ipfsHash, exists: true});
-        emit IDUpdated(who, name, dob, ipfsHash);
+        _registry[who] = TouristID({
+            name: name,
+            dob: dob,
+            aadhaarHash: aadhaarHash,
+            itinerary: itinerary,
+            emergencyContact: emergencyContact,
+            ipfsHash: ipfsHash,
+            exists: true
+        });
+        emit IDUpdated(who, name, dob, aadhaarHash, itinerary, emergencyContact, ipfsHash);
     }
 
-    function getID(address who) external view returns (string memory name, uint256 dob, string memory ipfsHash, bool exists) {
+    function getID(address who) external view returns (
+        string memory name,
+        uint256 dob,
+        string memory aadhaarHash,
+        string memory itinerary,
+        string memory emergencyContact,
+        string memory ipfsHash,
+        bool exists
+    ) {
         TouristID memory t = _registry[who];
-        return (t.name, t.dob, t.ipfsHash, t.exists);
+        return (t.name, t.dob, t.aadhaarHash, t.itinerary, t.emergencyContact, t.ipfsHash, t.exists);
     }
 
     // UUPS authorization

@@ -138,6 +138,119 @@ npm start
 
 ---
 
+## Local Development: Full Example
+
+### 1. Start a local Hardhat node
+```bash
+npx hardhat node
+```
+- This will print 20 test accounts and their private keys. Use any of these for testing (e.g., Account #0).
+
+### 2. Set up your .env for local node
+```
+ALCHEMY_MUMBAI=http://127.0.0.1:8545
+PRIVATE_KEY=<private key from above, e.g. 0xac09...ff80>
+BACKEND_PORT=4000
+```
+
+### 3. Deploy the contract to localhost
+```bash
+npx hardhat run scripts/deploy.js --network localhost
+```
+- The deployed contract address will be saved in `deployments.json`.
+
+
+### 4. Interact with the contract (full example, via Hardhat console)
+```bash
+npx hardhat console --network localhost
+```
+Copy-paste the following snippet into the console to test all contract features:
+```js
+// 1️⃣ Get signer
+const [owner] = await ethers.getSigners();
+
+// 2️⃣ Load deployed proxy address
+const deployments = require("./deployments.json");
+const addr = deployments.TouristIDRegistry;
+
+// 3️⃣ Connect to the contract
+const Registry = await ethers.getContractAt("TouristIDRegistryV1", addr);
+console.log("Connected to contract at:", addr);
+console.log("Owner:", owner.address);
+
+// 4️⃣ Register a Tourist ID
+await Registry.registerID(
+  "0x70997970C51812dc3A010C7d01b50e0d17dc79C8", // sample address
+  "Alice",
+  Math.floor(new Date("1990-01-01").getTime() / 1000),
+  "hashedAadhaar123",
+  "Mumbai -> Goa -> Jaipur",
+  "Bob: +91-9876543210",
+  "QmFakeIpfsHash"
+);
+console.log("Tourist ID registered!");
+
+// 5️⃣ Read the Tourist ID
+let data = await Registry.getID("0x70997970C51812dc3A010C7d01b50e0d17dc79C8");
+console.log("Tourist ID data:", data);
+
+// 6️⃣ Update the Tourist ID
+await Registry.updateID(
+  "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+  "Alice Updated",
+  Math.floor(new Date("1991-02-02").getTime() / 1000),
+  "hashedAadhaarUpdated",
+  "Delhi -> Jaipur",
+  "Bob: +91-9876543210",
+  "QmUpdatedIpfsHash"
+);
+console.log("Tourist ID updated!");
+
+// 7️⃣ Read the updated Tourist ID
+data = await Registry.getID("0x70997970C51812dc3A010C7d01b50e0d17dc79C8");
+console.log("Updated Tourist ID data:", data);
+```
+
+You will see:
+- Initial registration logs
+- The tourist data printed
+- Update logs
+- The updated tourist data printed
+
+---
+
+### 5. Start the backend server
+```bash
+cd backend
+npm start
+```
+
+
+### 6. Register and fetch a digital ID via API
+
+**Register:**
+
+POST to `http://localhost:4000/api/register` with JSON body:
+```json
+{
+  "address": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+  "name": "Alice",
+  "dob": 633830400, // unix timestamp (e.g., 1990-01-01)
+  "aadhaarHash": "hashedAadhaar123",
+  "itinerary": "Mumbai -> Goa -> Jaipur",
+  "emergencyContact": "Bob: +91-9876543210",
+  "metadata": { "nationality": "Wonderland", "passport": "123456" }
+}
+```
+
+**Fetch:**
+
+GET `http://localhost:4000/api/get/0x70997970C51812dc3A010C7d01b50e0d17dc79C8`
+
+You should see the digital ID data you registered, both from the contract and via the backend API, including all new fields.
+
+---
+
 ## API Endpoints
 - `POST /api/register` — Register a new digital ID
 - `GET /api/get/:address` — Fetch a digital ID by address

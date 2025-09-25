@@ -9,28 +9,28 @@ const mockVerification = async (touristData) => {
 // Example endpoint
 const registerTourist = async (req, res) => {
   try {
-    const { address, name, dob, metadata } = req.body;
+    const { address, name, dob, aadhaarHash, itinerary, emergencyContact, metadata } = req.body;
 
     // 1️⃣ Perform mock verification
-    const verificationResult = await mockVerification({ address, name, dob });
+    const verificationResult = await mockVerification({ address, name, dob, aadhaarHash, itinerary, emergencyContact });
 
     if (!verificationResult.verified) {
       return res.status(400).json({ success: false, message: "Verification failed" });
     }
 
     // 2️⃣ Upload metadata to IPFS (using ipfsService)
-    const ipfsResult = await ipfsService.uploadJSON(metadata);
+    const ipfsCid = await ipfsService.uploadJSON(metadata);
 
     // 3️⃣ Push to DigiLocker (mock)
-    const digilockerResult = await digilockerService.pushToDigilocker(address, ipfsResult.cid);
+    const digilockerResult = await digilockerService.pushToDigilocker(address, ipfsCid);
 
     // 4️⃣ Store in smart contract (via contractService)
-    const tx = await contractService.registerTourist(address, name, dob, ipfsResult.cid);
+    const tx = await contractService.registerID(address, name, dob, aadhaarHash, itinerary, emergencyContact, ipfsCid);
 
     res.json({
       success: true,
       message: "Tourist registered successfully (mock verification)",
-      ipfsCid: ipfsResult.cid,
+      ipfsCid,
       digilocker: digilockerResult,
       txHash: tx.hash
     });

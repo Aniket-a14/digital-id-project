@@ -19,13 +19,13 @@ const abi = JSON.parse(fs.readFileSync(abiPath)).abi;
 const contract = new ethers.Contract(address, abi, signer);
 
 module.exports = {
-  registerID: async (who, name, dob, ipfsHash) => {
-    const tx = await contract.registerID(who, name, dob, ipfsHash);
+  registerID: async (who, name, dob, aadhaarHash, itinerary, emergencyContact, ipfsHash) => {
+    const tx = await contract.registerID(who, name, dob, aadhaarHash, itinerary, emergencyContact, ipfsHash);
     await tx.wait();
     return tx;
   },
-  updateID: async (who, name, dob, ipfsHash) => {
-    const tx = await contract.updateID(who, name, dob, ipfsHash);
+  updateID: async (who, name, dob, aadhaarHash, itinerary, emergencyContact, ipfsHash) => {
+    const tx = await contract.updateID(who, name, dob, aadhaarHash, itinerary, emergencyContact, ipfsHash);
     await tx.wait();
     return tx;
   },
@@ -35,8 +35,11 @@ module.exports = {
     return {
       name: r[0],
       dob: r[1].toString(),
-      ipfsHash: r[2],
-      exists: r[3]
+      aadhaarHash: r[2],
+      itinerary: r[3],
+      emergencyContact: r[4],
+      ipfsHash: r[5],
+      exists: r[6]
     };
   }
 };
